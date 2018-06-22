@@ -103,5 +103,9 @@
     "typedoc": "^0.11.0",
     "typescript": "^2.6.2",
     "validate-commit-msg": "^2.12.2"
+  },
+  "dependencies": {
+    "commander": "2.15.1",
+    "minimist": "1.2.0"
   }
 }

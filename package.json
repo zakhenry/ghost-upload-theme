@@ -1,6 +1,6 @@
 {
   "name": "ghost-upload-theme",
-  "version": "0.0.0",
+  "version": "0.0.0-development",
   "description": "Easily upload a theme to https://ghost.org",
   "keywords": [],
   "main": "dist/ghost-upload-theme.umd.js",
@@ -35,7 +35,8 @@
     "commit": "git-cz",
     "semantic-release": "semantic-release",
     "semantic-release-prepare": "ts-node tools/semantic-release-prepare",
-    "precommit": "lint-staged"
+    "precommit": "lint-staged",
+    "travis-deploy-once": "travis-deploy-once"
   },
   "lint-staged": {
     "{src,test}/**/*.ts": [
@@ -108,7 +109,8 @@
     "tslint-config-standard": "7.1.0",
     "typedoc": "0.11.1",
     "typescript": "2.6.2",
-    "validate-commit-msg": "2.14.0"
+    "validate-commit-msg": "2.14.0",
+    "travis-deploy-once": "5.0.0"
   },
   "dependencies": {
     "commander": "2.15.1",

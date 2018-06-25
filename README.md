@@ -6,9 +6,7 @@ If you'd like to automate the upload of the new or updated theme as part of a CI
 
 # How to use the CLI
 
-WIP: It should be published soon as a node package. In the meantime you can clone, build and run it yourself:
-
 ```
-git clone https://github.com/maxime1992/ghost-upload-theme.git
-node dist/ghost-upload-theme.umd.js --theme-path ./path-to-your-theme.zip --environment-path ./path-to-your-environment.json
+yarn global add ghost-upload-theme
+ghost-upload-theme --theme-path ./path-to-your-theme.zip --environment-path ./path-to-your-environment.json
 ```

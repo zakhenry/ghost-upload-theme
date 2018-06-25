@@ -1,4 +1,4 @@
-import * as path from 'path';
+import * as nodePath from 'path';
 import * as fs from 'fs';
 
 export interface ArgumentsToParse {
@@ -9,6 +9,12 @@ export interface ArgumentsToParse {
 export interface Arguments {
   themePath: string;
   environmentPath: string;
+}
+
+export interface Environment {
+  baseUrl: string;
+  email: string;
+  password: string;
 }
 
 export const extractArgumentsOrFail = (argv: ArgumentsToParse): Arguments => {
@@ -31,8 +37,22 @@ export const extractArgumentsOrFail = (argv: ArgumentsToParse): Arguments => {
 };
 
 const fileExists = (pathStr: string): boolean => {
-  const fullPath: string = path.join(__dirname, '..', pathStr);
+  const fullPath: string = nodePath.join(__dirname, '..', pathStr);
   return fs.existsSync(fullPath);
+};
+
+const readFileSync = (pathStr: string): string => {
+  const fullPath: string = nodePath.join(__dirname, '..', pathStr);
+  return fs.readFileSync(fullPath, 'utf8');
+};
+
+const readJsonSync = <T = any>(pathStr: string): T => {
+  return JSON.parse(readFileSync(pathStr));
+};
+
+export const getStreamForPath = (pathStr: string): fs.ReadStream => {
+  const fullPath: string = nodePath.join(__dirname, '..', pathStr);
+  return fs.createReadStream(fullPath);
 };
 
 export const checkFilesExistsOrFail = (args: Arguments): void => {
@@ -43,4 +63,20 @@ export const checkFilesExistsOrFail = (args: Arguments): void => {
   if (!fileExists(args.environmentPath)) {
     throw new Error('Environment path is invalid: File does not exists');
   }
+};
+
+export const extractEnvironmentVariablesOrFail = (
+  pathStr: string
+): Environment => {
+  const environment: Environment = readJsonSync<Environment>(pathStr);
+
+  if (!environment.baseUrl || !environment.email || !environment.password) {
+    throw new Error('Envrionment file does not contains required variables');
+  }
+
+  return {
+    baseUrl: environment.baseUrl,
+    email: environment.email,
+    password: environment.password,
+  };
 };

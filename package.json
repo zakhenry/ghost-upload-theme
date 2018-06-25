@@ -9,6 +9,10 @@
   "files": [
     "dist"
   ],
+  "bin": {
+    "ghost-upload-theme": "./dist/ghost-upload-theme.umd.js"
+  },
+  "preferGlobal": true,
   "author": "Maxime Robert <maxime.robert1992@gmail.com>",
   "repository": {
     "type": "git",

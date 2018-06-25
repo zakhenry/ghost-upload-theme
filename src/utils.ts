@@ -1,5 +1,5 @@
-import * as nodePath from 'path';
 import * as fs from 'fs';
+import resolveCwd from 'resolve-cwd';
 
 export interface ArgumentsToParse {
   'theme-path': string;
@@ -37,12 +37,12 @@ export const extractArgumentsOrFail = (argv: ArgumentsToParse): Arguments => {
 };
 
 const fileExists = (pathStr: string): boolean => {
-  const fullPath: string = nodePath.join(__dirname, '..', pathStr);
+  const fullPath: string = resolveCwd(pathStr);
   return fs.existsSync(fullPath);
 };
 
 const readFileSync = (pathStr: string): string => {
-  const fullPath: string = nodePath.join(__dirname, '..', pathStr);
+  const fullPath: string = resolveCwd(pathStr);
   return fs.readFileSync(fullPath, 'utf8');
 };
 
@@ -51,7 +51,8 @@ const readJsonSync = <T = any>(pathStr: string): T => {
 };
 
 export const getStreamForPath = (pathStr: string): fs.ReadStream => {
-  const fullPath: string = nodePath.join(__dirname, '..', pathStr);
+  const fullPath: string = resolveCwd(pathStr);
+
   return fs.createReadStream(fullPath);
 };
 

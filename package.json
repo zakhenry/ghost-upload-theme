@@ -103,6 +103,7 @@
     "rollup-plugin-sourcemaps": "0.4.2",
     "rollup-plugin-typescript2": "0.15.0",
     "semantic-release": "15.6.0",
+    "travis-deploy-once": "5.0.0",
     "ts-jest": "22.4.6",
     "ts-node": "6.1.2",
     "tslint": "5.10.0",
@@ -110,13 +111,13 @@
     "tslint-config-standard": "7.1.0",
     "typedoc": "0.11.1",
     "typescript": "2.6.2",
-    "validate-commit-msg": "2.14.0",
-    "travis-deploy-once": "5.0.0"
+    "validate-commit-msg": "2.14.0"
   },
   "dependencies": {
     "commander": "2.15.1",
     "form-data": "2.3.2",
     "minimist": "1.2.0",
-    "node-fetch": "2.1.2"
+    "node-fetch": "2.1.2",
+    "resolve-cwd": "2.0.0"
   }
 }

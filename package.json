@@ -10,7 +10,7 @@
     "dist"
   ],
   "bin": {
-    "ghost-upload-theme": "./dist/ghost-upload-theme.umd.js"
+    "ghost-upload-theme": "./dist/index.js"
   },
   "preferGlobal": true,
   "author": "Maxime Robert <maxime.robert1992@gmail.com>",
@@ -26,6 +26,7 @@
     "lint": "tslint -t codeFrame 'src/**/*.ts' 'test/**/*.ts'",
     "prebuild": "rimraf dist",
     "build": "tsc --module commonjs && rollup -c rollup.config.ts && typedoc --out docs --target es6 --theme minimal --mode file src",
+    "copy-index": "cp ./src/index.js ./dist",
     "start": "rollup -c rollup.config.ts -w",
     "test": "jest",
     "test:watch": "jest --watch",

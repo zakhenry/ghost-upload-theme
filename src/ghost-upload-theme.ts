@@ -1,9 +1,10 @@
 import { GhostApi } from './api/api';
+import { debugLog } from './api/debug-log';
 import {
   ArgumentsToParse,
   extractArgumentsOrFail,
   Arguments,
-  checkFilesExistsOrFail,
+  assertFilesExist,
   extractEnvironmentVariablesOrFail,
   Environment,
   getStreamForPath,
@@ -14,7 +15,7 @@ const argv: ArgumentsToParse = require('minimist')(process.argv.slice(2));
 // checks arguments and files
 const args: Arguments = extractArgumentsOrFail(argv);
 
-checkFilesExistsOrFail(args);
+assertFilesExist(args);
 
 // environment and config
 const environment: Environment = extractEnvironmentVariablesOrFail(
@@ -26,7 +27,12 @@ const config: Config = createConfig(environment);
 async function start() {
   const ghostApi: GhostApi = new GhostApi(config);
 
-  await ghostApi.init();
+  if (args.initGhost) {
+    debugLog(`initializing ghost`);
+    await ghostApi.init();
+  }
+
+  await ghostApi.login();
 
   const uploadThemeRes = await ghostApi.uploadTheme(() =>
     getStreamForPath(args.themePath)
@@ -34,9 +40,19 @@ async function start() {
 
   const [theme] = uploadThemeRes.themes;
 
-  console.log(
-    `Theme "${theme.name}" has been uploaded (v ${theme.package.version})`
-  );
+  debugLog(`Theme "${theme.name}" uploaded (v${theme.package.version})`);
+  await ghostApi.activateTheme(theme);
+  debugLog(`Theme "${theme.name}" activated (v${theme.package.version})`);
+
+  if (args.routesPath) {
+    await ghostApi.uploadRoutes(() => getStreamForPath(args.routesPath));
+    debugLog(`Routes "${args.routesPath}" loaded`);
+  }
+
+  if (args.contentPath) {
+    await ghostApi.uploadContent(() => getStreamForPath(args.contentPath));
+    debugLog(`Content "${args.contentPath}" loaded`);
+  }
 }
 
 // tslint:disable-next-line:no-floating-promises

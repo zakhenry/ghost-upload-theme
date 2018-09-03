@@ -16,20 +16,20 @@ export interface Credentials {
   password: string;
 }
 
+export type Errors = { message: string; errorType: string }[];
+
+export interface GhostResponse {
+  errors: Errors;
+}
+
 // HTTP-RESPONSE
-export interface ConfigurationResponse {
+export interface ConfigurationResponse extends GhostResponse {
   configuration: [
     {
       clientId: string;
       clientSecret: string;
     }
   ];
-}
-
-export type Errors = { message: string; errorType: string }[];
-
-export interface GhostResponse {
-  errors: Errors;
 }
 
 export interface AuthResponse extends GhostResponse {
@@ -86,4 +86,14 @@ export interface ThemeResponse extends GhostResponse {
 
 export interface RoutesResponse extends GhostResponse {}
 
-export interface ContentResponse extends GhostResponse {}
+export interface Problem {
+  message: string;
+  help: string;
+  context: string;
+  err: any;
+}
+
+export interface ContentResponse extends GhostResponse {
+  db: any[];
+  problems: Problem[];
+}

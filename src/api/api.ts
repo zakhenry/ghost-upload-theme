@@ -23,6 +23,16 @@ export class ErrorUploadTheme extends Error {}
 export class ErrorUploadContent extends Error {}
 export class ErrorUploadRoutes extends Error {}
 export class ErrorActivateTheme extends Error {}
+export class GhostAdminError extends Error {}
+export class RetryAdminRoute extends Error {
+  constructor(message?: string) {
+    super(message);
+
+    Object.setPrototypeOf(this, RetryAdminRoute.prototype);
+  }
+}
+
+export const RETRY_ERRORS = ['MaintenanceError'];
 
 export class GhostApi {
   private token: string = '';
@@ -41,27 +51,20 @@ export class GhostApi {
       ],
     };
 
-    const initResponse: InitResponse = await fetch(this.config.urls.setupUrl, {
-      method: 'POST',
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
+    const initResponse: InitResponse = await this.fetchRetryOnErrors<
+      InitResponse
+    >(
+      this.config.urls.setupUrl,
+      {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(body),
       },
-      body: JSON.stringify(body),
-    })
-      .then(res => res.json() as Promise<InitResponse>)
-      .catch(err => {
-        debugLog(`Something went wrong while trying to initialize ghost`, err);
-        throw new ErrorAuthClient();
-      });
-
-    if (initResponse.errors) {
-      console.error(initResponse.errors);
-      throw new Error(initResponse.errors[0].message);
-    }
-
-    debugLog(`response was`, initResponse);
-    debugLog(`this.config.urls.setupUrl`, this.config.urls.setupUrl);
+      RETRY_ERRORS
+    );
 
     return initResponse;
   }
@@ -97,27 +100,20 @@ export class GhostApi {
     const body = new FormData();
     body.append('theme', getReadStream());
 
-    return fetch(this.config.urls.uploadThemeUrl, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${this.token}`,
+    return this.fetchRetryOnErrors<ThemeResponse>(
+      this.config.urls.uploadThemeUrl,
+      {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${this.token}`,
+        },
+        body,
       },
-      body,
-    })
-      .then(res => res.json() as Promise<ThemeResponse>)
-      .then((res: ThemeResponse) => {
-        // when the upload of a theme fails the API does not return an error
-        // code but just pass the error as part of the regular response...
-        if (!res.themes) {
-          throw new Error(`${res}`);
-        }
-
-        return res;
-      })
-      .catch(err => {
-        debugLog(`Something went wrong while trying to upload the theme`, err);
-        throw new ErrorUploadTheme();
-      });
+      RETRY_ERRORS
+    ).catch(err => {
+      debugLog(`Something went wrong while trying to upload the theme`, err);
+      throw new ErrorUploadTheme(err.message);
+    });
   }
 
   public activateTheme(theme: Theme): Promise<ThemeResponse> {
@@ -127,26 +123,19 @@ export class GhostApi {
       );
     }
 
-    return fetch(this.config.urls.activateThemeUrl(theme.name), {
-      method: 'PUT',
-      headers: {
-        Authorization: `Bearer ${this.token}`,
+    return this.fetchRetryOnErrors<ThemeResponse>(
+      this.config.urls.activateThemeUrl(theme.name),
+      {
+        method: 'PUT',
+        headers: {
+          Authorization: `Bearer ${this.token}`,
+        },
       },
-    })
-      .then(res => res.json() as Promise<ThemeResponse>)
-      .then((res: ThemeResponse) => {
-        // when the upload of a theme fails the API does not return an error
-        // code but just pass the error as part of the regular response...
-        if (!res.themes) {
-          throw new Error(`${res}`);
-        }
-
-        return res;
-      })
-      .catch(err => {
-        debugLog(`Something went wrong while trying to upload the theme`, err);
-        throw new ErrorActivateTheme();
-      });
+      RETRY_ERRORS
+    ).catch(err => {
+      debugLog(`Something went wrong while trying to upload the theme`, err);
+      throw new ErrorActivateTheme();
+    });
   }
 
   public uploadRoutes(
@@ -159,27 +148,20 @@ export class GhostApi {
     const body = new FormData();
     body.append('routes', getReadStream());
 
-    return fetch(this.config.urls.uploadRoutesUrl, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${this.token}`,
+    return this.fetchRetryOnErrors<RoutesResponse>(
+      this.config.urls.uploadRoutesUrl,
+      {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${this.token}`,
+        },
+        body,
       },
-      body,
-    })
-      .then(res => res.json() as Promise<RoutesResponse>)
-      .then((res: RoutesResponse) => {
-        // when the upload of a theme fails the API does not return an error
-        // code but just pass the error as part of the regular response...
-        if (res.errors) {
-          throw new Error(`${res}`);
-        }
-
-        return res;
-      })
-      .catch(err => {
-        debugLog(`Something went wrong while trying to upload the routes`, err);
-        throw new ErrorUploadRoutes();
-      });
+      RETRY_ERRORS
+    ).catch(err => {
+      debugLog(`Something went wrong while trying to upload the routes`, err);
+      throw new ErrorUploadRoutes(err.message);
+    });
   }
 
   public async uploadContent(
@@ -194,7 +176,7 @@ export class GhostApi {
     const body = new FormData();
     body.append('importfile', getReadStream());
 
-    const content = await this.fetchRetryOnErrors(
+    const content = await this.fetchRetryOnErrors<ContentResponse>(
       this.config.urls.uploadContentUrl,
       {
         method: 'POST',
@@ -203,17 +185,14 @@ export class GhostApi {
         },
         body,
       },
-      ['MaintenanceError']
+      RETRY_ERRORS,
+      true
     )
       .then((res: ContentResponse) => {
-        // when the upload of a theme fails the API does not return an error
-        // code but just pass the error as part of the regular response...
-        if (res.errors) {
-          debugLog(
-            `Something went wrong while trying to upload the content`,
-            res.errors
+        if (res.problems && res.problems.length) {
+          res.problems.forEach(p =>
+            debugLog(`Content Warning: ${p.message}`, p.context)
           );
-          throw new Error(`${res.errors[0].message}`);
         }
 
         return res;
@@ -226,7 +205,7 @@ export class GhostApi {
         throw new ErrorUploadContent(err.message);
       });
 
-    debugLog('Content uploaded', content);
+    debugLog('Content upload success');
 
     return content;
   }
@@ -240,46 +219,95 @@ export class GhostApi {
    */
   private async fetchRetryOnErrors<R extends GhostResponse>(
     url: string | Request,
-    init: RequestInit,
-    retryErrorTypes: string[]
+    init: RequestInit = { method: 'GET' },
+    retryErrorTypes: string[],
+    verifyStatusWithConfigFetch: boolean = false
   ): Promise<R> {
     const makeAttempt = (retries: number): Promise<R> => {
       debugLog(`Calling ${init.method} ${url}`);
       return fetch(url, { ...init, ...{ timeout: 1000 } })
         .then(res => res.json() as Promise<R>)
-        .then(async (res: R) => {
-          debugLog(`Got`, res);
-
-          if (
-            res.errors &&
-            res.errors.some(e => retryErrorTypes.includes(e.errorType))
-          ) {
-            if (retries > 5) {
-              throw new Error('count exceeded');
-            }
-
-            debugLog(
-              `${init.method} ${url} failed due to ${
+        .then((res: R) => {
+          if (res.errors) {
+            if (res.errors.some(e => retryErrorTypes.includes(e.errorType))) {
+              const message = `${init.method} ${url} failed due to ${
                 res.errors.find(e => retryErrorTypes.includes(e.errorType))!
                   .errorType
-              }`
-            );
+              }`;
+
+              throw new RetryAdminRoute(message);
+            } else {
+              debugLog(res.errors);
+              throw new GhostAdminError(
+                `${
+                  init.method
+                } ${url} failed due to ${this.ghostErrorResponseToString(res)}`
+              );
+            }
+          }
+
+          return res;
+        })
+        .catch(async err => {
+          if (
+            err instanceof RetryAdminRoute ||
+            err.message.includes('network timeout')
+          ) {
+            debugLog(err.message);
+
+            if (retries > 5) {
+              throw new Error('Retry count exceeded');
+            }
+
+            debugLog(`Retrying ${init.method} ${url} after ${retries}s`);
+
             await this.sleep(retries * 1000);
-            debugLog(`Retrying ${init.method} ${url}`);
 
             return makeAttempt(++retries);
           }
 
-          return res;
+          throw err;
         });
     };
+
+    /**
+     * @hack note for some reason if we don't first test that Ghost is ready, if
+     * we attempt to make the call, and it fails, subsequent retries will always
+     * timeout. It appears to be some kind of error choke/throttle mechanism
+     * that is misbehaving.
+     */
+    if (verifyStatusWithConfigFetch) {
+      let attempts = 0;
+      let apiResponse;
+
+      do {
+        await this.sleep(attempts * 1000);
+        apiResponse = await fetch(this.config.urls.configUrl);
+
+        if (apiResponse.status !== 200) {
+          const body: GhostResponse = await apiResponse.json();
+          debugLog(
+            `Ghost is not ready, got ${apiResponse.status}`,
+            this.ghostErrorResponseToString(body)
+          );
+        }
+        attempts++;
+      } while (apiResponse.status !== 200);
+    }
 
     return makeAttempt(0);
   }
 
+  private ghostErrorResponseToString(res: GhostResponse): string {
+    return res.errors.map(e => `${e.errorType}: "${e.message}"`).join();
+  }
+
   private getClientConfig(): Promise<ClientConfig> {
-    return fetch(this.config.urls.configUrl)
-      .then(res => res.json() as Promise<ConfigurationResponse>)
+    return this.fetchRetryOnErrors<ConfigurationResponse>(
+      this.config.urls.configUrl,
+      undefined,
+      RETRY_ERRORS
+    )
       .then((res: ConfigurationResponse) => {
         const [configuration] = res.configuration;
         return configuration;

@@ -6,6 +6,7 @@ export interface Config {
     password: string;
   };
   urls: {
+    baseApiUrl: string;
     configUrl: string;
 
     authUrl: string;
@@ -26,6 +27,7 @@ export const createConfig = (env: Environment): Config => ({
     password: env.password,
   },
   urls: {
+    baseApiUrl: env.baseUrl + apiVersionPath,
     configUrl: `${env.baseUrl}${apiVersionPath}/configuration`,
 
     authUrl: `${env.baseUrl}${apiVersionPath}/authentication/token`,

@@ -81,7 +81,7 @@ export class GhostApi {
     });
 
     if (authResponse.errors) {
-      console.error(authResponse.errors);
+      debugLog(authResponse.errors);
       throw new Error(authResponse.errors[0].message);
     }
 
@@ -176,7 +176,7 @@ export class GhostApi {
     const body = new FormData();
     body.append('importfile', getReadStream());
 
-    const content = await this.fetchRetryOnErrors<ContentResponse>(
+    return this.fetchRetryOnErrors<ContentResponse>(
       this.config.urls.uploadContentUrl,
       {
         method: 'POST',
@@ -204,10 +204,6 @@ export class GhostApi {
         );
         throw new ErrorUploadContent(err.message);
       });
-
-    debugLog('Content upload success');
-
-    return content;
   }
 
   private sleep(ms: number): Promise<void> {

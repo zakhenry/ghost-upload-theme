@@ -8,5 +8,11 @@ If you'd like to automate the upload of the new or updated theme as part of a CI
 
 ```
 yarn global add ghost-upload-theme
-ghost-upload-theme --theme-path ./path-to-your-theme.zip --environment-path ./path-to-your-environment.json
+
+ghost-upload-theme
+    --theme-path ./path/to/your/theme.zip
+    --environment-path ./path/to/your/env/.env
+    --routes-path ./path/to/your/routes.yaml
+    --content-path ./path/to/your/exported/content*.json
+    --init # use this if the ghost install is completely fresh, no users created
 ```

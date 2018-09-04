@@ -28,30 +28,37 @@ async function start() {
   const ghostApi: GhostApi = new GhostApi(config);
 
   if (args.initGhost) {
-    debugLog(`initializing ghost`);
+    debugLog(`Initializing Ghost...`);
     await ghostApi.init();
+    debugLog(`Initialization success.`);
   }
 
+  debugLog(`Logging in...`);
   await ghostApi.login();
+  debugLog(`Login success.`);
 
+  debugLog(`Uploading Theme...`);
   const uploadThemeRes = await ghostApi.uploadTheme(() =>
     getStreamForPath(args.themePath)
   );
 
   const [theme] = uploadThemeRes.themes;
 
-  debugLog(`Theme "${theme.name}" uploaded (v${theme.package.version})`);
+  debugLog(`Theme "${theme.name}" uploaded (v${theme.package.version}).`);
+  debugLog('Activating theme...');
   await ghostApi.activateTheme(theme);
-  debugLog(`Theme "${theme.name}" activated (v${theme.package.version})`);
+  debugLog(`Theme "${theme.name}" activated (v${theme.package.version}).`);
 
   if (args.routesPath) {
+    debugLog('Activating routes...');
     await ghostApi.uploadRoutes(() => getStreamForPath(args.routesPath));
     debugLog(`Routes "${args.routesPath}" loaded`);
   }
 
   if (args.contentPath) {
+    debugLog('Uploading content...');
     await ghostApi.uploadContent(() => getStreamForPath(args.contentPath));
-    debugLog(`Content "${args.contentPath}" loaded`);
+    debugLog(`Content "${args.contentPath}" uploaded.`);
   }
 }
 

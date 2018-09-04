@@ -2,6 +2,7 @@ import * as fs from 'fs';
 import resolveCwd from 'resolve-cwd';
 import dotenv from 'dotenv';
 import getenv from 'getenv';
+import { debugLog } from './api/debug-log';
 
 export interface ArgumentsToParse {
   'theme-path': string;
@@ -61,13 +62,11 @@ export const assertFilesExist = (args: Arguments): void => {
 export const extractEnvironmentVariablesOrFail = (
   path: string | undefined
 ): Environment => {
-  console.log(`path`, path);
-
   const result = dotenv.config(path ? { path } : undefined);
 
   if (result.error) {
     if (!path && result.error.code === 'ENOENT') {
-      console.info('No .env file detected, using environment variables only');
+      debugLog('No .env file detected, using environment variables only');
     } else {
       throw result.error;
     }

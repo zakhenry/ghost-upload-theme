@@ -16,6 +16,7 @@ import {
 import { formatAuthParams } from './api.utils';
 import { Config } from './config';
 import { debugLog } from './debug-log';
+import getenv from 'getenv';
 
 export class ErrorFetchClientConfig extends Error {}
 export class ErrorAuthClient extends Error {}
@@ -109,7 +110,8 @@ export class GhostApi {
         },
         body,
       },
-      RETRY_ERRORS
+      RETRY_ERRORS,
+      true
     ).catch(err => {
       debugLog(`Something went wrong while trying to upload the theme`, err);
       throw new ErrorUploadTheme(err.message);
@@ -221,7 +223,10 @@ export class GhostApi {
   ): Promise<R> {
     const makeAttempt = (retries: number): Promise<R> => {
       debugLog(`Calling ${init.method} ${url}`);
-      return fetch(url, { ...init, ...{ timeout: 1000 } })
+      return fetch(url, {
+        ...init,
+        ...{ timeout: getenv.int('GHOST_API_FETCH_TIMEOUT_MS', 10000) },
+      })
         .then(res => res.json() as Promise<R>)
         .then((res: R) => {
           if (res.errors) {
@@ -278,15 +283,19 @@ export class GhostApi {
 
       do {
         await this.sleep(attempts * 1000);
+        debugLog('Verifying ghost API readiness...');
         apiResponse = await fetch(this.config.urls.configUrl);
 
         if (apiResponse.status !== 200) {
           const body: GhostResponse = await apiResponse.json();
           debugLog(
-            `Ghost is not ready, got ${apiResponse.status}`,
+            `Ghost is not ready, got ${
+              apiResponse.status
+            }. Retrying in ${attempts}s.`,
             this.ghostErrorResponseToString(body)
           );
         }
+        debugLog('Ghost API is ready.');
         attempts++;
       } while (apiResponse.status !== 200);
     }

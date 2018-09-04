@@ -14,6 +14,17 @@ declare module 'dotenv' {
 }
 
 declare module 'getenv' {
-  const getenv: (key: string) => string;
+  interface GetEnv {
+    (key: string, fallback?: string): string;
+    string: (key: string, fallback?: string) => string;
+    float: (key: string, fallback?: number) => number;
+    int: (key: string, fallback?: number) => number;
+    bool: (key: string, fallback?: boolean) => boolean;
+    boolish: (key: string, fallback?: boolean) => boolean;
+    array: <T>(key: string, fallback?: T[]) => T[];
+  }
+
+  const getenv: GetEnv;
+
   export = getenv;
 }

@@ -74,8 +74,8 @@ export const extractEnvironmentVariablesOrFail = (
   }
 
   return {
-    baseUrl: getenv('BASE_URL'),
-    email: getenv('EMAIL'),
-    password: getenv('PASSWORD'),
+    baseUrl: getenv('GHOST_URL'),
+    email: getenv('GHOST_ADMIN_EMAIL'),
+    password: getenv('GHOST_ADMIN_PASSWORD'),
   };
 };

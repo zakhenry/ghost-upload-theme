@@ -14,7 +14,7 @@ export interface Config {
 
     uploadThemeUrl: string;
     uploadRoutesUrl: string;
-    uploadContentUrl: string;
+    contentUrl: string;
     activateThemeUrl: (themeName: string) => string;
   };
 }
@@ -37,6 +37,6 @@ export const createConfig = (env: Environment): Config => ({
     activateThemeUrl: themeName =>
       `${env.baseUrl}${apiVersionPath}/themes/${themeName}/activate`,
     uploadRoutesUrl: `${env.baseUrl}${apiVersionPath}/settings/routes/yaml`,
-    uploadContentUrl: `${env.baseUrl}${apiVersionPath}/db`,
+    contentUrl: `${env.baseUrl}${apiVersionPath}/db`,
   },
 });

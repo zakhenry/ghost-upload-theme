@@ -1,22 +1,22 @@
 {
-  "name": "ghost-upload-theme",
+  "name": "ghost-ci-utils",
   "version": "0.0.0-development",
   "description": "Easily upload a theme to https://ghost.org",
   "keywords": [],
-  "main": "dist/ghost-upload-theme.umd.js",
-  "module": "dist/ghost-upload-theme.es5.js",
-  "typings": "dist/types/ghost-upload-theme.d.ts",
+  "main": "dist/ghost-ci-utils.umd.js",
+  "module": "dist/ghost-ci-utils.es5.js",
+  "typings": "dist/types/ghost-ci-utils.d.ts",
   "files": [
     "dist"
   ],
   "bin": {
-    "ghost-upload-theme": "./dist/index.js"
+    "ghost-ci-utils": "./dist/index.js"
   },
   "preferGlobal": true,
   "author": "Maxime Robert <maxime.robert1992@gmail.com>",
   "repository": {
     "type": "git",
-    "url": "https://github.com/maxime1992/ghost-upload-theme.git"
+    "url": "https://github.com/maxime1992/ghost-ci-utils.git"
   },
   "license": "MIT",
   "engines": {

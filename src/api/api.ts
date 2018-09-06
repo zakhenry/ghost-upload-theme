@@ -44,7 +44,7 @@ export class GhostApi {
     const body = {
       setup: [
         {
-          name: 'ghost-upload-theme-bot',
+          name: 'ghost-ci-utils-bot',
           email: this.config.credentials.email,
           password: this.config.credentials.password,
           blogTitle: 'Temporary Blog Title',
@@ -179,7 +179,7 @@ export class GhostApi {
     body.append('importfile', getReadStream());
 
     return this.fetchRetryOnErrors<ContentResponse>(
-      this.config.urls.uploadContentUrl,
+      this.config.urls.contentUrl,
       {
         method: 'POST',
         headers: {
@@ -338,4 +338,25 @@ export class GhostApi {
         throw new ErrorAuthClient();
       });
   }
+
+  public downloadContent(writeStream: () => fs.WriteStream): Promise<void> {
+    return this.downloadFile(writeStream(), this.config.urls.contentUrl);
+  }
+
+  private async downloadFile(fileStream: fs.WriteStream, path: string): Promise<void> {
+    const res = await fetch(path);
+
+    return new Promise<void>((resolve, reject) => {
+      res.body.pipe(fileStream);
+      res.body.on("error", (err) => {
+        fileStream.close();
+        reject(err);
+      });
+      fileStream.on("finish", () => {
+        fileStream.close();
+        resolve();
+      });
+    });
+  }
+
 }

@@ -1,3 +1,3 @@
 #!/usr/bin/env node
 
-require('./ghost-upload-theme.umd.js');
+require('./ghost-ci-utils.umd.js');

@@ -6,18 +6,28 @@ import { debugLog } from './api/debug-log';
 
 export interface ArgumentsToParse {
   'theme-path': string;
+  upload: 'upload';
+  download: 'download';
   'routes-path': string;
   'content-path': string;
   'environment-path': string;
-  init: string;
+  'prepend-image-url': string;
+  init: 'init';
+}
+
+export enum Action {
+  UPLOAD = 'upload',
+  DOWNLOAD = 'download',
 }
 
 export interface Arguments {
+  action: Action;
   themePath: string;
   routesPath: string;
   contentPath: string;
   initGhost: boolean;
   environmentPath: string;
+  prependImageUrl?: string;
 }
 
 export interface Environment {
@@ -27,18 +37,22 @@ export interface Environment {
 }
 
 export const extractArgumentsOrFail = (argv: ArgumentsToParse): Arguments => {
-  if (!argv['theme-path']) {
+  if (!argv['upload'] && argv['download']) {
     throw new Error(
-      'You must provide the argument "theme-path" indicating where to find the theme file (zip)'
+      'You must provide the argument --upload or --download indicating the transmission direction'
     );
   }
 
+  const action = argv['upload'] ? Action.UPLOAD : Action.DOWNLOAD;
+
   return {
+    action,
     initGhost: !!argv['init'],
     themePath: argv['theme-path'],
     contentPath: argv['content-path'],
     routesPath: argv['routes-path'],
     environmentPath: argv['environment-path'],
+    prependImageUrl: action === Action.DOWNLOAD ? argv['prepend-image-url'] || getenv('GHOST_URL') : undefined,
   };
 };
 
@@ -47,10 +61,16 @@ const fileExists = (pathStr: string): boolean => {
   return fs.existsSync(fullPath);
 };
 
-export const getStreamForPath = (pathStr: string): fs.ReadStream => {
+export const getReadStreamForPath = (pathStr: string): fs.ReadStream => {
   const fullPath: string = resolveCwd(pathStr);
 
   return fs.createReadStream(fullPath);
+};
+
+export const getWriteStreamForPath = (pathStr: string): fs.WriteStream => {
+  const fullPath: string = resolveCwd(pathStr);
+
+  return fs.createWriteStream(fullPath);
 };
 
 export const assertFilesExist = (args: Arguments): void => {

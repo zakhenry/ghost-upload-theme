@@ -1,4 +1,4 @@
-import DummyClass from '../src/ghost-upload-theme';
+import DummyClass from '../src/ghost-ci-utils';
 
 /**
  * Dummy test

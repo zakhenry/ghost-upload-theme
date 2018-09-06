@@ -63,7 +63,7 @@ export interface InitUser {
   created_at: string;
   created_by: string;
   updated_at: string;
-  updated_by: 1;
+  updated_by: number;
 }
 
 export interface InitResponse extends GhostResponse {

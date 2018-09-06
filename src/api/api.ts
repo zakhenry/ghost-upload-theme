@@ -121,7 +121,7 @@ export class GhostApi {
   public activateTheme(theme: Theme): Promise<ThemeResponse> {
     if (!this.token) {
       throw new Error(
-        'Before uploading a theme you must call the login method'
+        'Before activating the theme you must call the login method'
       );
     }
 
@@ -135,7 +135,7 @@ export class GhostApi {
       },
       RETRY_ERRORS
     ).catch(err => {
-      debugLog(`Something went wrong while trying to upload the theme`, err);
+      debugLog(`Something went wrong while trying to activate the theme`, err);
       throw new ErrorActivateTheme();
     });
   }
@@ -212,9 +212,6 @@ export class GhostApi {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
 
-  /**
-   * @todo this doesn't work as for some reason the retried fetch times out
-   */
   private async fetchRetryOnErrors<R extends GhostResponse>(
     url: string | Request,
     init: RequestInit = { method: 'GET' },
@@ -225,16 +222,13 @@ export class GhostApi {
       debugLog(`Calling ${init.method} ${url}`);
       return fetch(url, {
         ...init,
-        ...{ timeout: getenv.int('GHOST_API_FETCH_TIMEOUT_MS', 10000) },
+        timeout: getenv.int('GHOST_API_FETCH_TIMEOUT_MS', 10000),
       })
         .then(res => res.json() as Promise<R>)
         .then((res: R) => {
           if (res.errors) {
             if (res.errors.some(e => retryErrorTypes.includes(e.errorType))) {
-              const message = `${init.method} ${url} failed due to ${
-                res.errors.find(e => retryErrorTypes.includes(e.errorType))!
-                  .errorType
-              }`;
+              const message = this.ghostErrorResponseToString(res);
 
               throw new RetryAdminRoute(message);
             } else {
@@ -256,7 +250,7 @@ export class GhostApi {
           ) {
             debugLog(err.message);
 
-            if (retries > 5) {
+            if (retries > getenv.int('GHOST_MAX_API_RETRIES', 5)) {
               throw new Error('Retry count exceeded');
             }
 
@@ -282,6 +276,10 @@ export class GhostApi {
       let apiResponse;
 
       do {
+        if (attempts > getenv.int('GHOST_MAX_API_RETRIES', 5)) {
+          throw new Error('Ghost verify readiness attempts exceeded');
+        }
+
         await this.sleep(attempts * 1000);
         debugLog('Verifying ghost API readiness...');
         apiResponse = await fetch(this.config.urls.configUrl);

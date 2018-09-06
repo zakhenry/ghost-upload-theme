@@ -8,6 +8,7 @@ export interface ArgumentsToParse {
   'theme-path': string;
   'routes-path': string;
   'content-path': string;
+  'activate-theme': string;
   'environment-path': string;
   init: string;
 }
@@ -16,6 +17,7 @@ export interface Arguments {
   themePath: string;
   routesPath: string;
   contentPath: string;
+  activateTheme: boolean;
   initGhost: boolean;
   environmentPath: string;
 }
@@ -38,6 +40,7 @@ export const extractArgumentsOrFail = (argv: ArgumentsToParse): Arguments => {
     themePath: argv['theme-path'],
     contentPath: argv['content-path'],
     routesPath: argv['routes-path'],
+    activateTheme: !!argv['activate-theme'],
     environmentPath: argv['environment-path'],
   };
 };

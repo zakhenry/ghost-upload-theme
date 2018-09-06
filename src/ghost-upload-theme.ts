@@ -37,17 +37,22 @@ async function start() {
   await ghostApi.login();
   debugLog(`Login success.`);
 
-  debugLog(`Uploading Theme...`);
-  const uploadThemeRes = await ghostApi.uploadTheme(() =>
-    getStreamForPath(args.themePath)
-  );
+  if (args.themePath) {
+    debugLog(`Uploading Theme...`);
+    const uploadThemeRes = await ghostApi.uploadTheme(() =>
+      getStreamForPath(args.themePath)
+    );
 
-  const [theme] = uploadThemeRes.themes;
+    const [theme] = uploadThemeRes.themes;
 
-  debugLog(`Theme "${theme.name}" uploaded (v${theme.package.version}).`);
-  debugLog('Activating theme...');
-  await ghostApi.activateTheme(theme);
-  debugLog(`Theme "${theme.name}" activated (v${theme.package.version}).`);
+    debugLog(`Theme "${theme.name}" uploaded (v${theme.package.version}).`);
+
+    if (args.activateTheme) {
+      debugLog('Activating theme...');
+      await ghostApi.activateTheme(theme);
+      debugLog(`Theme "${theme.name}" activated (v${theme.package.version}).`);
+    }
+  }
 
   if (args.routesPath) {
     debugLog('Activating routes...');

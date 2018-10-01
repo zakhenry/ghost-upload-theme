@@ -29,6 +29,8 @@ export class RetryAdminRoute extends Error {
   constructor(message?: string) {
     super(message);
 
+    // we need to set the prototype of this here so that we are able to
+    // later use `if (error instanceOf RetryAdminRoute)` otherwise it wouldn't work
     Object.setPrototypeOf(this, RetryAdminRoute.prototype);
   }
 }

@@ -79,7 +79,7 @@
     "collectCoverage": true
   },
   "devDependencies": {
-    "@types/debug": "^0.0.30",
+    "@types/debug": "0.0.30",
     "@types/form-data": "2.2.1",
     "@types/jest": "22.0.0",
     "@types/node": "10.3.4",
@@ -116,13 +116,13 @@
   },
   "dependencies": {
     "commander": "2.15.1",
-    "debug": "^3.1.0",
-    "dotenv": "^6.0.0",
+    "debug": "3.1.0",
+    "dotenv": "6.0.0",
     "form-data": "2.3.2",
-    "getenv": "^0.7.0",
+    "getenv": "0.7.0",
     "minimist": "1.2.0",
     "node-fetch": "2.1.2",
     "resolve-cwd": "2.0.0",
-    "supports-color": "^5.5.0"
+    "supports-color": "5.5.0"
   }
 }

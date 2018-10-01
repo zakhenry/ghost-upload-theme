@@ -222,7 +222,7 @@ export class GhostApi {
       debugLog(`Calling ${init.method} ${url}`);
       return fetch(url, {
         ...init,
-        timeout: getenv.int('GHOST_API_FETCH_TIMEOUT_MS', 10000),
+        timeout: getenv.int('GHOST_API_FETCH_TIMEOUT_MS', 30000),
       })
         .then(res => res.json() as Promise<R>)
         .then((res: R) => {
